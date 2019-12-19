@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	// "io"
 	"log"
 	"net/http"
-	// "os"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -15,8 +13,17 @@ func main() {
 	scrapeJobPage()
 }
 
+type Project struct {
+	title          string
+	category       string
+	description    string
+	timeCommitment string
+	length         string
+	expertLevel    string
+}
+
 func scrapeJobPage() {
-	response, err := http.Get("http://filipeamoreira.com/")
+	response, err := http.Get("https://www.upwork.com/job/Back-end-developer-Ruby-Rails_~015192b45cd3e4eb34/")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,11 +39,20 @@ func scrapeJobPage() {
 		log.Fatal(err)
 	}
 
-	document.Find(".nav li").Each(func(index int, item *goquery.Selection) {
-		// fmt.Printf(item.Text())
-		link := item.Text()
-		fmt.Printf("Link %d: %s\n", index, link)
+	project := Project{}
+
+	project.title = document.Find("h2.m-0-bottom").First().Text()
+	project.category = document.Find("a.specialization").First().Text()
+	project.description = document.Find("div.job-description").First().Text()
+	jobFeatures := []string{}
+
+	document.Find("ul.job-features li").Each(func(index int, item *goquery.Selection) {
+		jobFeatures = append(jobFeatures, item.Text())
 	})
 
-	// io.Copy(os.Stdout, response.Body)
+	project.timeCommitment = jobFeatures[0]
+	project.length = jobFeatures[1]
+	project.expertLevel = jobFeatures[2]
+
+	fmt.Println(project)
 }
